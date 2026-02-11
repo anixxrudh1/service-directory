@@ -10,6 +10,8 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Admin from './pages/Admin';
 import UserManagement from './pages/UserManagement';
+import Wallet from './pages/Wallet';
+import Invoices from './pages/Invoices';
 
 // Import New Info Pages from the single file we created
 import { 
@@ -41,6 +43,8 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/service/:id" element={<ServiceDetails />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/wallet" element={<Wallet />} />
+            <Route path="/invoices" element={<Invoices />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/users" element={<UserManagement />} />
             

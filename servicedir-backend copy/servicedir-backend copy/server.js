@@ -10,6 +10,9 @@ const Booking = require('./models/Booking');
 const Review = require('./models/Review');
 const Contact = require('./models/Contact');
 const LoginHistory = require('./models/LoginHistory');
+const Payment = require('./models/Payment');
+const Wallet = require('./models/Wallet');
+const Invoice = require('./models/Invoice');
 
 // Import Routes
 const authRoutes = require('./routes/auth');
@@ -17,6 +20,9 @@ const serviceRoutes = require('./routes/services');
 const bookingRoutes = require('./routes/bookings');
 const reviewRoutes = require('./routes/reviews');
 const contactRoutes = require('./routes/contacts');
+const paymentRoutes = require('./routes/payments');
+const walletRoutes = require('./routes/wallets');
+const invoiceRoutes = require('./routes/invoices');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -266,6 +272,9 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/contacts', contactRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/wallets', walletRoutes);
+app.use('/api/invoices', invoiceRoutes);
 
 // Basic Route
 app.get('/', (req, res) => {
