@@ -3,11 +3,59 @@ import { Mail, Phone, MapPin, Send } from 'lucide-react';
 
 const Contact = () => {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    message: ''
+  });
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    setError('');
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    // In a real app, you would send this data to your backend
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('http://localhost:5001/api/contacts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message');
+      }
+
+      console.log('✅ Message sent successfully:', data);
+      setSubmitted(true);
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        message: ''
+      });
+
+    } catch (err) {
+      console.error('❌ Error sending message:', err);
+      setError(err.message || 'Failed to send message. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -29,7 +77,7 @@ const Contact = () => {
             <div className="space-y-6">
               <div className="flex items-center space-x-4">
                 <Phone className="w-6 h-6 text-blue-200" />
-                <span className="text-lg">+1 (888) 123-4567</span>
+                <span className="text-lg">+91 6367767658</span>
               </div>
               <div className="flex items-center space-x-4">
                 <Mail className="w-6 h-6 text-blue-200" />
@@ -37,7 +85,33 @@ const Contact = () => {
               </div>
               <div className="flex items-center space-x-4">
                 <MapPin className="w-6 h-6 text-blue-200" />
-                <span className="text-lg">123 Service Street, Tech City, TC 90210</span>
+                <span className="text-lg">Lovely Professional University
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                  
+                </span>
               </div>
             </div>
           </div>
@@ -60,29 +134,81 @@ const Contact = () => {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
+                {error && (
+                  <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+                    {error}
+                  </div>
+                )}
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-                    <input type="text" required className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="John" />
+                    <input 
+                      type="text" 
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      required 
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
+                      placeholder="John" 
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                    <input type="text" required className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Doe" />
+                    <input 
+                      type="text" 
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      required 
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
+                      placeholder="Doe" 
+                    />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                  <input type="email" required className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="john@example.com" />
+                  <input 
+                    type="email" 
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required 
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
+                    placeholder="john@example.com" 
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
-                  <textarea required rows="4" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none" placeholder="How can we help you?"></textarea>
+                  <textarea 
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    required 
+                    rows="4" 
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none" 
+                    placeholder="How can we help you?"
+                  ></textarea>
                 </div>
 
-                <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg">
-                  Send Message
+                <button 
+                  type="submit" 
+                  disabled={loading}
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-5 h-5" />
+                      Send Message
+                    </>
+                  )}
                 </button>
               </form>
             )}

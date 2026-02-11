@@ -144,6 +144,18 @@ const SignUp = ({ isOpen, onClose, onSwitchToSignIn }) => {
               <Building className="w-4 h-4 inline mr-2" />
               Business Owner
             </button>
+            <button
+              type="button"
+              onClick={() => setUserType('admin')}
+              className={`flex-1 py-2.5 rounded-md font-medium transition-all ${
+                userType === 'admin'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              <span className="text-base inline mr-2">🔐</span>
+              Admin
+            </button>
           </div>
         </div>
 

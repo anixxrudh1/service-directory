@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { X, MapPin, DollarSign, Tag, Phone, FileText, Briefcase } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, MapPin, DollarSign, Tag, Phone, FileText, Briefcase, Loader } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../config';
 
 const AddServiceModal = ({ isOpen, onClose }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -14,6 +17,28 @@ const AddServiceModal = ({ isOpen, onClose }) => {
     phone: '',
     image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop' // Default placeholder
   });
+
+  // Fetch categories on mount
+  useEffect(() => {
+    if (isOpen) {
+      fetchCategories();
+    }
+  }, [isOpen]);
+
+  const fetchCategories = async () => {
+    try {
+      setCategoriesLoading(true);
+      const response = await fetch(`${API_URL}/services/categories/all`);
+      if (!response.ok) throw new Error('Failed to fetch categories');
+      const data = await response.json();
+      setCategories(data.sort());
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+      setCategories([]);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -99,22 +124,28 @@ const AddServiceModal = ({ isOpen, onClose }) => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
               <div className="relative">
-                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <select
-                  name="category"
-                  required
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none appearance-none bg-white"
-                >
-                  <option value="">Select Category</option>
-                  <option value="Plumbing">Plumbing</option>
-                  <option value="Electrical">Electrical</option>
-                  <option value="Cleaning">Cleaning</option>
-                  <option value="Carpentry">Carpentry</option>
-                  <option value="Painting">Painting</option>
-                  <option value="Landscaping">Landscaping</option>
-                </select>
+                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                {categoriesLoading ? (
+                  <div className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 flex items-center gap-2 text-gray-500">
+                    <Loader className="w-4 h-4 animate-spin" />
+                    Loading categories...
+                  </div>
+                ) : (
+                  <select
+                    name="category"
+                    required
+                    value={formData.category}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none appearance-none bg-white"
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
 

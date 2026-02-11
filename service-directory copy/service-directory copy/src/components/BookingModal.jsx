@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Calendar, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const BookingModal = ({ isOpen, onClose, service }) => {
+const BookingModal = ({ isOpen, onClose, service, onBookingSuccess }) => {
   const { user } = useAuth();
   const [date, setDate] = useState('');
   const [loading, setLoading] = useState(false);
@@ -12,12 +12,19 @@ const BookingModal = ({ isOpen, onClose, service }) => {
     setLoading(true);
 
     try {
+      // Check if providerId is an object or string
+      const providerId = typeof service.providerId === 'object' 
+        ? service.providerId._id 
+        : service.providerId;
+
       const payload = {
         customerId: user.id,
-        providerId: service.providerId,
+        providerId: providerId,
         serviceId: service._id,
-        date: date
+        date: new Date(date).toISOString() // Convert to proper ISO date string
       };
+
+      console.log('Booking Payload:', payload); // Debug log
 
       const response = await fetch('http://localhost:5001/api/bookings', {
         method: 'POST',
@@ -25,11 +32,21 @@ const BookingModal = ({ isOpen, onClose, service }) => {
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error('Booking failed');
+      const data = await response.json();
+      console.log('Booking Response:', data); // Debug log
+
+      if (!response.ok) throw new Error(data.error || 'Booking failed');
 
       alert('Booking Confirmed! The provider will contact you shortly.');
+      setDate(''); // Reset date
       onClose();
+      
+      // Refresh bookings list if callback provided
+      if (onBookingSuccess) {
+        onBookingSuccess();
+      }
     } catch (error) {
+      console.error('Booking Error:', error);
       alert(error.message);
     } finally {
       setLoading(false);

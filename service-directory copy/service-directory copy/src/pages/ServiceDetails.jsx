@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { MapPin, Clock, DollarSign, Phone, ArrowLeft, Star, Share2, MessageSquare } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { MapPin, Clock, DollarSign, Phone, ArrowLeft, Star, Share2, MessageSquare, Trash2 } from 'lucide-react';
 import BookingModal from '../components/BookingModal';
 import ReviewModal from '../components/ReviewModal'; // Import the Review Modal
 import { useAuth } from '../context/AuthContext';
@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 const ServiceDetails = () => {
   const { id } = useParams();
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   // Data States
   const [service, setService] = useState(null);
@@ -18,6 +19,7 @@ const ServiceDetails = () => {
   const [error, setError] = useState(null);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false); // Modal state for reviews
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,6 +51,12 @@ const ServiceDetails = () => {
     setIsBookingOpen(true);
   };
 
+  const handleBookingSuccess = () => {
+    setIsBookingOpen(false);
+    alert("Booking created successfully! Redirecting to your profile...");
+    navigate('/profile');
+  };
+
   const handleReviewClick = () => {
     if (!user) { alert("Please Sign In to leave a review."); return; }
     setIsReviewOpen(true);
@@ -63,6 +71,30 @@ const ServiceDetails = () => {
       reviewCount: (prev.reviewCount || 0) + 1
     }));
   };
+
+  // DELETE SERVICE (Only for service owner)
+  const handleDeleteService = async () => {
+    if (!window.confirm("Are you sure you want to delete this service? This action cannot be undone.")) return;
+    
+    try {
+      setIsDeleting(true);
+      const res = await fetch(`http://localhost:5001/api/services/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        alert('Service deleted successfully!');
+        navigate('/');
+      } else {
+        alert('Failed to delete service.');
+      }
+    } catch (err) {
+      console.error('Error deleting service:', err);
+      alert('Error deleting service.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Check if user is the owner of this service
+  const isOwner = user && service && user.id === service.providerId?._id;
 
   if (loading) return <div className="min-h-screen flex justify-center items-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
   if (error) return <div className="min-h-screen flex flex-col justify-center items-center text-center px-4"><h2 className="text-2xl font-bold text-gray-800 mb-2">Oops! Service not found</h2><Link to="/" className="text-blue-600 hover:underline">Back to Home</Link></div>;
@@ -158,6 +190,16 @@ const ServiceDetails = () => {
           {/* RIGHT COLUMN: Booking Card */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24 border border-gray-100">
+              {isOwner && (
+                <button
+                  onClick={handleDeleteService}
+                  disabled={isDeleting}
+                  className="w-full mb-4 flex items-center justify-center gap-2 bg-red-50 text-red-600 py-2 px-4 rounded-lg hover:bg-red-100 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  {isDeleting ? 'Deleting...' : 'Delete Service'}
+                </button>
+              )}
               <div className="flex justify-between items-center mb-6">
                 <span className="text-gray-500">Starting at</span>
                 <span className="text-3xl font-bold text-blue-600">${service.price}</span>
@@ -166,14 +208,16 @@ const ServiceDetails = () => {
                 <div className="flex items-center p-3 bg-gray-50 rounded-lg"><Clock className="w-5 h-5 text-gray-400 mr-3" /><div><p className="text-xs text-gray-500 uppercase font-bold">Availability</p><p className="text-sm font-medium text-gray-900">Available Today</p></div></div>
                 <div className="flex items-center p-3 bg-gray-50 rounded-lg"><Phone className="w-5 h-5 text-gray-400 mr-3" /><div><p className="text-xs text-gray-500 uppercase font-bold">Contact Provider</p><p className="text-sm font-medium text-gray-900">{service.phone}</p></div></div>
               </div>
-              <button onClick={handleBookClick} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg hover:scale-[1.02] transition-all active:scale-95">Book Now</button>
+              {!isOwner && (
+                <button onClick={handleBookClick} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg hover:scale-[1.02] transition-all active:scale-95">Book Now</button>
+              )}
             </div>
           </div>
 
         </div>
       </div>
 
-      <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} service={service} />
+      <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} service={service} onBookingSuccess={handleBookingSuccess} />
       
       {/* RENDER REVIEW MODAL */}
       <ReviewModal 

@@ -126,13 +126,28 @@ const Navbar = () => {
                         My Dashboard
                       </button>
 
-                      <button 
-                        onClick={handleListBusiness}
-                        className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 flex items-center gap-2 transition-colors"
-                      >
-                        <BriefcaseIcon className="w-4 h-4" />
-                        List New Service
-                      </button>
+                      {user.role !== 'admin' && (
+                        <button 
+                          onClick={handleListBusiness}
+                          className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 flex items-center gap-2 transition-colors"
+                        >
+                          <BriefcaseIcon className="w-4 h-4" />
+                          List New Service
+                        </button>
+                      )}
+
+                      {user.role === 'admin' && (
+                        <button 
+                          onClick={() => {
+                            setIsProfileOpen(false);
+                            navigate('/admin');
+                          }}
+                          className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 flex items-center gap-2 transition-colors"
+                        >
+                          <span className="text-base">🔐</span>
+                          Admin Portal
+                        </button>
+                      )}
 
                       <button onClick={handleLogout} className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-100 mt-1 transition-colors">
                         <LogOut className="w-4 h-4" />

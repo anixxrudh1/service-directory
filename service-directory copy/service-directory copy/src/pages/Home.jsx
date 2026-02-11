@@ -4,15 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import SearchBar from '../components/SearchBar';
 import ServiceCard from '../components/ServiceCard';
 import Pagination from '../components/Pagination';
-
-// Try to import API_URL, but fallback if it doesn't exist
-let API_URL = 'http://localhost:5001/api';
-try {
-  const config = require('../config');
-  if (config.API_URL) API_URL = config.API_URL;
-} catch (e) {
-  // Config not found, using default localhost
-}
+import { API_URL } from '../config';
 
 // UPDATED CATEGORY IMAGES
 const categoryImages = {
@@ -22,6 +14,16 @@ const categoryImages = {
   'Carpentry': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=800&auto=format&fit=crop&q=60',
   'Painting': 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=800&auto=format&fit=crop&q=60',
   'Landscaping': 'https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800&auto=format&fit=crop&q=60',
+  'HVAC': 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=800&auto=format&fit=crop&q=60',
+  'Water Damage': 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=800&auto=format&fit=crop&q=60',
+  'Hair & Beauty': 'https://images.unsplash.com/photo-1487412720507-e21cc028cb29?w=800&auto=format&fit=crop&q=60',
+  'Pet Services': 'https://images.unsplash.com/photo-1558788353-f76d92427f16?w=800&auto=format&fit=crop&q=60',
+  'Education': 'https://images.unsplash.com/photo-1516321318423-f06f70d504f0?w=800&auto=format&fit=crop&q=60',
+  'Photography': 'https://images.unsplash.com/photo-1547658528-d9f12bfbb57d?w=800&auto=format&fit=crop&q=60',
+  'Moving & Hauling': 'https://images.unsplash.com/photo-1534949520255-2c51fb47dd9f?w=800&auto=format&fit=crop&q=60',
+  'Furniture & Decor': 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&auto=format&fit=crop&q=60',
+  'General Handyman': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop&q=60',
+  'Locksmith': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop&q=60',
   'Other': 'https://images.unsplash.com/photo-1521791136064-7985c2717883?w=800&auto=format&fit=crop&q=60'
 };
 

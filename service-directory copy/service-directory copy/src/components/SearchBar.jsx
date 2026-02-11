@@ -1,10 +1,32 @@
-import React, { useState } from 'react';
-import { Search, MapPin } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, MapPin, Loader } from 'lucide-react';
+import { API_URL } from '../config';
 
 const SearchBar = ({ onSearch }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('');
   const [category, setCategory] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setCategoriesLoading(true);
+      const response = await fetch(`${API_URL}/services/categories/all`);
+      if (!response.ok) throw new Error('Failed to fetch categories');
+      const data = await response.json();
+      setCategories(data.sort());
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+      setCategories([]);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
 
   return (
     // UPDATED: Added 'relative w-screen left-[calc(-50vw+50%)]'
@@ -55,19 +77,29 @@ const SearchBar = ({ onSearch }) => {
           </div>
 
           <div className="flex flex-wrap gap-2 mt-4">
-            {['Plumbing', 'Electrical', 'Cleaning', 'Carpentry', 'Painting'].map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  category === cat
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+            {categoriesLoading ? (
+              <div className="flex items-center gap-2 text-gray-500">
+                <Loader className="w-4 h-4 animate-spin" />
+                Loading categories...
+              </div>
+            ) : (
+              categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => {
+                    setCategory(cat);
+                    onSearch({ searchTerm, location, category: cat });
+                  }}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    category === cat
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))
+            )}
           </div>
         </div>
       </div>

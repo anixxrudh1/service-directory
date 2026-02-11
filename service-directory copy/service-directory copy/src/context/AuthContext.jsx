@@ -20,6 +20,9 @@ export const AuthProvider = ({ children }) => {
   // 2. REGISTER ACTION
   const registerAction = async (formData) => {
     try {
+      console.log("🔵 Sending registration request to:", 'http://localhost:5001/api/auth/register');
+      console.log("🔵 Form data:", formData);
+      
       const response = await fetch('http://localhost:5001/api/auth/register', {
         method: 'POST',
         headers: {
@@ -28,7 +31,9 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify(formData),
       });
 
+      console.log("🟡 Response status:", response.status);
       const data = await response.json();
+      console.log("🟡 Response data:", data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Registration failed');
@@ -38,9 +43,10 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('serviceDirUser', JSON.stringify(data.user));
       localStorage.setItem('serviceDirToken', data.token);
       
+      console.log("🟢 Registration successful!");
       return { success: true };
     } catch (error) {
-      console.error("Registration Error:", error);
+      console.error("❌ Registration Error:", error);
       return { success: false, message: error.message };
     }
   };

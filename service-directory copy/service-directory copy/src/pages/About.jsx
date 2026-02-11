@@ -44,7 +44,7 @@ const About = () => {
       {/* Story Section */}
       <div className="bg-gray-50 py-16">
         <div className="max-w-3xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
+          <h2 className="text-5xl font-bold text-gray-900 mb-6">Our Story</h2>
           <p className="text-gray-600 text-lg leading-relaxed mb-6">
             ServiceDir began with a simple idea: it shouldn't be hard to find a good plumber, electrician, or cleaner. We saw that local professionals struggled to reach customers, and customers struggled to find reliable help.
           </p>

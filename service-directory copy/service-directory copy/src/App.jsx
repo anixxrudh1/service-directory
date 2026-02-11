@@ -8,6 +8,8 @@ import Profile from './pages/Profile';
 import Categories from './pages/Categories';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import Admin from './pages/Admin';
+import UserManagement from './pages/UserManagement';
 
 // Import New Info Pages from the single file we created
 import { 
@@ -39,6 +41,9 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/service/:id" element={<ServiceDetails />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/users" element={<UserManagement />} />
+            
             
             {/* Info & Footer Pages */}
             <Route path="/how-it-works" element={<HowItWorks />} />
