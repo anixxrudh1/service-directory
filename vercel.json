@@ -1,0 +1,5 @@
+{
+  "root": "service-directory copy/service-directory copy",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
+}
