@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   role: { 
     type: String, 
-    enum: ['customer', 'business'], 
+    enum: ['customer', 'business', 'admin'], 
     default: 'customer' 
   },
   // Fields for business owners only

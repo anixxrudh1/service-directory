@@ -4,11 +4,10 @@ const Service = require('../models/Service');
 
 // 1. POST: Create a new Service
 router.post('/', async (req, res) => {
-  // ... (Keep your existing POST logic exactly as is)
   console.log("📝 Creating new service:", req.body.name);
   try {
-    const newService = new Service(req.body);
-    const savedService = await newService.save();
+    const service = new Service(req.body);
+    const savedService = await service.save();
     console.log("✅ Service created successfully");
     res.status(201).json(savedService);
   } catch (err) {
@@ -16,24 +15,34 @@ router.post('/', async (req, res) => {
   }
 });
 
-// 2. GET: Fetch Services (UPDATED to support filtering)
+// 2. GET: Fetch unique categories
+router.get('/categories/all', async (req, res) => {
+  try {
+    const categories = await Service.distinct('category');
+    res.json(categories);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 3. GET: Fetch Services (supports filtering by providerId)
 router.get('/', async (req, res) => {
-  const { providerId } = req.query; // Check for ?providerId=... in URL
-  const filter = providerId ? { providerId } : {}; // If exists, filter by it
+  const { providerId } = req.query;
 
   try {
-    const services = await Service.find(filter).sort({ createdAt: -1 });
+    const query = providerId ? { providerId } : {};
+    const services = await Service.find(query)
+      .populate('providerId', 'name businessName email phone');
     res.json(services);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// 3. GET Single Service
+// 4. GET Single Service
 router.get('/:id', async (req, res) => {
-  // ... (Keep existing GET /:id logic)
   try {
-    const service = await Service.findById(req.params.id);
+    const service = await Service.findById(req.params.id).populate('providerId', 'name businessName email phone');
     if (!service) return res.status(404).json({ message: 'Service not found' });
     res.json(service);
   } catch (err) {
@@ -41,7 +50,18 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// 4. DELETE: Remove a Service (NEW ROUTE)
+// 5. PUT: Update a Service
+router.put('/:id', async (req, res) => {
+  try {
+    const service = await Service.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!service) return res.status(404).json({ message: 'Service not found' });
+    res.json(service);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 6. DELETE: Remove a Service
 router.delete('/:id', async (req, res) => {
   try {
     const service = await Service.findByIdAndDelete(req.params.id);

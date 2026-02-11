@@ -6,7 +6,7 @@ const Service = require('../models/Service');
 // 1. GET: Fetch all reviews for a specific service
 router.get('/:serviceId', async (req, res) => {
   try {
-    const reviews = await Review.find({ serviceId: req.params.serviceId }).sort({ createdAt: -1 });
+    const reviews = await Review.find({ serviceId: req.params.serviceId }).populate('userId', 'name email');
     res.json(reviews);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -29,7 +29,7 @@ router.post('/', async (req, res) => {
 
     // C. Update the Service with new stats
     await Service.findByIdAndUpdate(serviceId, {
-      rating: averageRating,
+      rating: parseFloat(averageRating),
       reviewCount: reviews.length
     });
 
