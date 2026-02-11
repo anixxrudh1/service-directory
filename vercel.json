@@ -1,9 +1,4 @@
 {
-  "projects": [
-    {
-      "name": "service-directory",
-      "alias": ["service-directory"],
-      "path": "service-directory copy/service-directory copy"
-    }
-  ]
+  "buildCommand": "cd 'service-directory copy/service-directory copy' && npm run build",
+  "outputDirectory": "service-directory copy/service-directory copy/dist"
 }
