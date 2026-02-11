@@ -1,4 +1,4 @@
 {
-  "buildCommand": "cd 'service-directory copy/service-directory copy' && npm run build",
+  "buildCommand": "npm --prefix 'service-directory copy/service-directory copy' run build",
   "outputDirectory": "service-directory copy/service-directory copy/dist"
 }
