@@ -5,7 +5,7 @@ const loginHistorySchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true
+      required: false
     },
     email: {
       type: String,
@@ -15,7 +15,7 @@ const loginHistorySchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ['customer', 'business', 'admin'],
-      required: true
+      required: false
     },
     loginTime: {
       type: Date,

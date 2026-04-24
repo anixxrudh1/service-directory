@@ -1,274 +1,211 @@
 import React, { useState } from 'react';
-import { CreditCard, Wallet, AlertCircle } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { X, CreditCard, DollarSign, CheckCircle, Smartphone } from 'lucide-react';
 
-const PaymentModal = ({ isOpen, onClose, booking, service, onPaymentSuccess }) => {
-  const { user } = useAuth();
-  const [paymentMethod, setPaymentMethod] = useState('card');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [cardDetails, setCardDetails] = useState({
-    cardNumber: '',
-    expiryDate: '',
-    cvv: ''
-  });
-  const [walletBalance, setWalletBalance] = useState(0);
+const PaymentModal = ({ isOpen, onClose, bookingDetails, onPaymentSuccess }) => {
+  const [paymentStep, setPaymentStep] = useState('method'); // method, processing, success
+  const [selectedMethod, setSelectedMethod] = useState('card');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState('');
 
-  // Fetch wallet balance on mount
-  React.useEffect(() => {
-    if (paymentMethod === 'wallet' && user) {
-      fetchWalletBalance();
-    }
-  }, [paymentMethod, user]);
-
-  const fetchWalletBalance = async () => {
-    try {
-      const res = await fetch(`http://localhost:5001/api/wallets/balance/${user.id}`);
-      const data = await res.json();
-      setWalletBalance(data.balance || 0);
-    } catch (err) {
-      console.error('Error fetching wallet balance:', err);
-    }
-  };
-
-  const amount = service?.price || 0;
-  const platformFee = (amount * 0.1).toFixed(2);
-  const total = (amount + parseFloat(platformFee)).toFixed(2);
-
-  const handleCardChange = (e) => {
-    const { name, value } = e.target;
-    setCardDetails(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handlePayWithCard = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  const handlePayment = async () => {
+    setIsProcessing(true);
+    setError('');
 
     try {
-      // Step 1: Create Payment Intent
-      const intentRes = await fetch('http://localhost:5001/api/payments/create-intent', {
+      // Call backend to create payment intent
+      const response = await fetch('http://localhost:5001/api/payments/create-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          bookingId: booking._id,
-          amount: parseFloat(total),
-          paymentMethod: 'card'
+          bookingId: bookingDetails?.id,
+          amount: bookingDetails?.totalPrice,
+          paymentMethod: selectedMethod
         })
       });
 
-      const intentData = await intentRes.json();
-
-      if (!intentRes.ok) {
-        throw new Error(intentData.error || 'Failed to create payment intent');
+      if (!response.ok) {
+        throw new Error('Payment failed');
       }
 
-      // Step 2: In a real app, you'd use Stripe.js here to confirm payment
-      // For demo purposes, we'll simulate successful payment
-      alert('In production, Stripe Elements would handle secure card processing');
+      const data = await response.json();
 
-      // Step 3: Confirm payment
-      const confirmRes = await fetch('http://localhost:5001/api/payments/confirm', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          paymentIntentId: intentData.clientSecret,
-          paymentId: intentData.paymentId
-        })
-      });
-
-      if (!confirmRes.ok) {
-        throw new Error('Payment confirmation failed');
-      }
-
-      // Success
-      alert('Payment successful!');
-      if (onPaymentSuccess) {
-        onPaymentSuccess(intentData.paymentId);
-      }
-      onClose();
+      // Simulate payment processing
+      setTimeout(() => {
+        setPaymentStep('success');
+        setIsProcessing(false);
+        if (onPaymentSuccess) {
+          onPaymentSuccess();
+        }
+      }, 2000);
     } catch (err) {
       setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePayWithWallet = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    if (walletBalance < amount) {
-      setError(`Insufficient wallet balance. You need $${amount.toFixed(2)} but have $${walletBalance.toFixed(2)}`);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const res = await fetch('http://localhost:5001/api/payments/pay-with-wallet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bookingId: booking._id,
-          customerId: user.id
-        })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Wallet payment failed');
-      }
-
-      alert('Payment successful!');
-      if (onPaymentSuccess) {
-        onPaymentSuccess(data.payment._id);
-      }
-      onClose();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      setIsProcessing(false);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-96 overflow-y-auto">
-        <div className="p-6 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white">
-          <h2 className="text-xl font-bold text-gray-900">Payment</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            ✕
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-lg max-w-md w-full">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-800">Payment</h2>
+          <button
+            onClick={() => {
+              onClose();
+              setPaymentStep('method');
+            }}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
-          {/* Booking Summary */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-gray-900 mb-3">Order Summary</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Service Price:</span>
-                <span className="font-medium">${amount.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Platform Fee (10%):</span>
-                <span className="font-medium">${platformFee}</span>
-              </div>
-              <div className="flex justify-between border-t border-gray-200 pt-2 mt-2">
-                <span className="text-gray-900 font-semibold">Total:</span>
-                <span className="font-bold text-blue-600">${total}</span>
-              </div>
-            </div>
-          </div>
-
+        {/* Content */}
+        <div className="p-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex gap-2">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
             </div>
           )}
 
-          {/* Payment Method Selection */}
-          <div className="space-y-3">
-            <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors" style={{ borderColor: paymentMethod === 'card' ? '#3b82f6' : '' }}>
-              <input
-                type="radio"
-                name="payment"
-                value="card"
-                checked={paymentMethod === 'card'}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="w-4 h-4"
-              />
-              <CreditCard className="w-5 h-5 text-gray-600" />
-              <span className="font-medium text-gray-900">Credit/Debit Card</span>
-            </label>
-
-            <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors" style={{ borderColor: paymentMethod === 'wallet' ? '#3b82f6' : '' }}>
-              <input
-                type="radio"
-                name="payment"
-                value="wallet"
-                checked={paymentMethod === 'wallet'}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="w-4 h-4"
-              />
-              <Wallet className="w-5 h-5 text-gray-600" />
-              <div className="flex-1">
-                <span className="font-medium text-gray-900">Wallet </span>
-                <span className="text-xs text-gray-500">(Balance: ${walletBalance.toFixed(2)})</span>
-              </div>
-            </label>
-          </div>
-
-          {/* Card Form */}
-          {paymentMethod === 'card' && (
-            <form onSubmit={handlePayWithCard} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
-                <input
-                  type="text"
-                  name="cardNumber"
-                  placeholder="4242 4242 4242 4242"
-                  value={cardDetails.cardNumber}
-                  onChange={handleCardChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  required
-                />
+          {paymentStep === 'method' && (
+            <div className="space-y-4">
+              {/* Amount */}
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <p className="text-gray-600 text-sm mb-1">Total Amount</p>
+                <p className="text-3xl font-bold text-blue-600">
+                  ${bookingDetails?.totalPrice?.toFixed(2)}
+                </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+              {/* Payment Methods */}
+              <div className="space-y-3">
+                <label className="flex items-center p-4 border-2 border-blue-600 rounded-lg cursor-pointer bg-blue-50">
                   <input
-                    type="text"
-                    name="expiryDate"
-                    placeholder="MM/YY"
-                    value={cardDetails.expiryDate}
-                    onChange={handleCardChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    required
+                    type="radio"
+                    name="method"
+                    value="card"
+                    checked={selectedMethod === 'card'}
+                    onChange={(e) => setSelectedMethod(e.target.value)}
+                    className="mr-3"
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">CVV</label>
+                  <CreditCard className="w-5 h-5 mr-3 text-blue-600" />
+                  <span className="flex-1">
+                    <p className="font-medium text-gray-800">Credit/Debit Card</p>
+                    <p className="text-sm text-gray-600">Visa, Mastercard, Amex</p>
+                  </span>
+                </label>
+
+                <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-purple-200">
                   <input
-                    type="text"
-                    name="cvv"
-                    placeholder="123"
-                    value={cardDetails.cvv}
-                    onChange={handleCardChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    required
+                    type="radio"
+                    name="method"
+                    value="wallet"
+                    checked={selectedMethod === 'wallet'}
+                    onChange={(e) => setSelectedMethod(e.target.value)}
+                    className="mr-3"
                   />
-                </div>
+                  <DollarSign className="w-5 h-5 mr-3 text-purple-600" />
+                  <span className="flex-1">
+                    <p className="font-medium text-gray-800">Wallet</p>
+                    <p className="text-sm text-gray-600">Use wallet balance</p>
+                  </span>
+                </label>
+
+                <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-200">
+                  <input
+                    type="radio"
+                    name="method"
+                    value="upi"
+                    checked={selectedMethod === 'upi'}
+                    onChange={(e) => setSelectedMethod(e.target.value)}
+                    className="mr-3"
+                  />
+                  <Smartphone className="w-5 h-5 mr-3 text-green-600" />
+                  <span className="flex-1">
+                    <p className="font-medium text-gray-800">UPI</p>
+                    <p className="text-sm text-gray-600">Google Pay, PhonePe, Paytm</p>
+                  </span>
+                </label>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
-              >
-                {loading ? 'Processing...' : `Pay $${total}`}
-              </button>
-            </form>
+              {/* Payment Details */}
+              {selectedMethod === 'card' && (
+                <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 space-y-3 animate-fadeIn">
+                  <input type="text" placeholder="Card Number" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <div className="flex gap-3">
+                    <input type="text" placeholder="MM/YY" className="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" />
+                    <input type="text" placeholder="CVV" className="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <input type="text" placeholder="Cardholder Name" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" />
+                </div>
+              )}
+
+              {selectedMethod === 'upi' && (
+                <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 flex flex-col items-center animate-fadeIn">
+                  <p className="text-sm font-medium text-gray-800 mb-1">Scan QR Code to Pay</p>
+                  <p className="text-xs text-gray-500 mb-3">Use any UPI app (GPay, PhonePe, Paytm)</p>
+                  <div className="p-2 bg-white border border-gray-200 rounded-lg shadow-sm">
+                    <img 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=test@upi&pn=ServiceDirectory&am=${bookingDetails?.totalPrice}`} 
+                      alt="UPI QR Code" 
+                      className="w-32 h-32" 
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Terms */}
+              <label className="flex items-start space-x-2 text-sm text-gray-600">
+                <input type="checkbox" className="mt-1" defaultChecked />
+                <span>
+                  I agree to the <a href="#" className="text-blue-600 hover:underline">terms and conditions</a>
+                </span>
+              </label>
+
+              {/* Buttons */}
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => {
+                    onClose();
+                    setPaymentStep('method');
+                  }}
+                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handlePayment}
+                  disabled={isProcessing}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:shadow-lg disabled:opacity-50 transition"
+                >
+                  {isProcessing ? 'Processing...' : 'Pay Now'}
+                </button>
+              </div>
+            </div>
           )}
 
-          {/* Wallet Payment */}
-          {paymentMethod === 'wallet' && (
-            <button
-              onClick={handlePayWithWallet}
-              disabled={loading || walletBalance < amount}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
-            >
-              {loading ? 'Processing...' : `Pay $${total} from Wallet`}
-            </button>
+          {paymentStep === 'success' && (
+            <div className="text-center space-y-4">
+              <div className="flex justify-center">
+                <CheckCircle className="w-16 h-16 text-green-500" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800">Payment Successful!</h3>
+              <p className="text-gray-600">
+                Your booking has been confirmed. Check your email for details.
+              </p>
+              <button
+                onClick={() => {
+                  onClose();
+                  setPaymentStep('method');
+                }}
+                className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:shadow-lg transition"
+              >
+                Done
+              </button>
+            </div>
           )}
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, User, LogOut, ChevronDown, Briefcase, Wallet, FileText } from 'lucide-react';
+import { Menu, X, User, LogOut, ChevronDown, Briefcase } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom'; // <--- Updated imports
 import SignIn from './SignIn';
 import SignUp from './SignUp';
@@ -126,28 +126,6 @@ const Navbar = () => {
                         My Dashboard
                       </button>
                       
-                      <button 
-                        onClick={() => {
-                          setIsProfileOpen(false);
-                          navigate('/wallet');
-                        }}
-                        className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 flex items-center gap-2 transition-colors"
-                      >
-                        <Wallet className="w-4 h-4" />
-                        My Wallet
-                      </button>
-
-                      <button 
-                        onClick={() => {
-                          setIsProfileOpen(false);
-                          navigate('/invoices');
-                        }}
-                        className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 flex items-center gap-2 transition-colors"
-                      >
-                        <FileText className="w-4 h-4" />
-                        My Invoices
-                      </button>
-
                       {user.role !== 'admin' && (
                         <button 
                           onClick={handleListBusiness}

@@ -47,6 +47,8 @@ const Profile = () => {
 
         const bookingsRes = await fetch(`http://localhost:5001/api/bookings/${user.id}?role=${user.role}`);
         const bookingsData = await bookingsRes.json();
+        console.log('✅ Fetched bookings:', bookingsData);
+        console.log('📌 User ID:', user.id, 'Role:', user.role);
         setMyBookings(bookingsData);
 
       } catch (err) {
@@ -122,6 +124,10 @@ const Profile = () => {
   const handleBackToOverview = () => {
     setViewMode('overview');
     setSelectedCategory(null);
+  };
+
+  const handleRefreshBookings = () => {
+    refreshBookings();
   };
 
   if (!user) return null;
@@ -468,12 +474,21 @@ const Profile = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            <h2 className="text-xl font-bold text-gray-800">My Bookings History</h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-800">My Bookings History</h2>
+              <button 
+                onClick={handleRefreshBookings}
+                className="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium"
+              >
+                🔄 Refresh
+              </button>
+            </div>
             
             {myBookings.length === 0 ? (
               <div className="text-center py-16 bg-white rounded-xl border border-gray-100">
                 <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-500">No bookings yet.</p>
+                <p className="text-xs text-gray-400 mt-2">User ID: {user.id}</p>
               </div>
             ) : (
               myBookings.map((booking) => (

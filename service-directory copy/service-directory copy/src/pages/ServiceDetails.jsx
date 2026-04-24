@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { MapPin, Clock, DollarSign, Phone, ArrowLeft, Star, Share2, MessageSquare, Trash2 } from 'lucide-react';
 import BookingModal from '../components/BookingModal';
+import PaymentModal from '../components/PaymentModal';
 import ReviewModal from '../components/ReviewModal'; // Import the Review Modal
 import { useAuth } from '../context/AuthContext';
 
@@ -18,6 +19,8 @@ const ServiceDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [bookingPayload, setBookingPayload] = useState(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false); // Modal state for reviews
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -51,10 +54,30 @@ const ServiceDetails = () => {
     setIsBookingOpen(true);
   };
 
-  const handleBookingSuccess = () => {
+  const handleProceedToPayment = (payload) => {
+    setBookingPayload(payload);
     setIsBookingOpen(false);
-    alert("Booking created successfully! Redirecting to your profile...");
-    navigate('/profile');
+    setIsPaymentOpen(true);
+  };
+
+  const handlePaymentSuccess = async () => {
+    try {
+      const response = await fetch('http://localhost:5001/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bookingPayload),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Booking failed');
+
+      alert("Payment and Booking created successfully! Redirecting to your profile...");
+      setIsPaymentOpen(false);
+      navigate('/profile');
+    } catch (error) {
+      console.error('Booking Error:', error);
+      alert(error.message);
+    }
   };
 
   const handleReviewClick = () => {
@@ -217,7 +240,8 @@ const ServiceDetails = () => {
         </div>
       </div>
 
-      <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} service={service} onBookingSuccess={handleBookingSuccess} />
+      <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} service={service} onProceedToPayment={handleProceedToPayment} />
+      <PaymentModal isOpen={isPaymentOpen} onClose={() => setIsPaymentOpen(false)} bookingDetails={{ totalPrice: service.price }} onPaymentSuccess={handlePaymentSuccess} />
       
       {/* RENDER REVIEW MODAL */}
       <ReviewModal 

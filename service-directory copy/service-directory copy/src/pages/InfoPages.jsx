@@ -2,7 +2,6 @@ import React from 'react';
 import { CheckCircle, ArrowRight, Star, Shield, Users, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-// --- 1. HOW IT WORKS ---
 export const HowItWorks = () => (
   <div className="min-h-screen bg-gray-50 py-16">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -30,7 +29,6 @@ export const HowItWorks = () => (
   </div>
 );
 
-// --- 2. PRICING ---
 export const Pricing = () => (
   <div className="min-h-screen bg-gray-50 py-16">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -73,7 +71,6 @@ export const Pricing = () => (
   </div>
 );
 
-// --- 3. BUSINESS LOGIN INFO ---
 export const BusinessLoginInfo = () => (
   <div className="min-h-screen bg-white py-16">
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -99,7 +96,6 @@ export const BusinessLoginInfo = () => (
   </div>
 );
 
-// --- 4. SUCCESS STORIES ---
 export const SuccessStories = () => (
   <div className="min-h-screen bg-gray-50 py-16">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -135,7 +131,6 @@ export const SuccessStories = () => (
   </div>
 );
 
-// --- 5. LIST BUSINESS INFO ---
 export const ListBusinessInfo = () => (
   <div className="max-w-3xl mx-auto px-4 py-16">
     <h1 className="text-4xl font-bold mb-6">List Your Business</h1>
@@ -151,7 +146,6 @@ export const ListBusinessInfo = () => (
   </div>
 );
 
-// --- 6. LEGAL PAGES ---
 export const PrivacyPolicy = () => (
   <div className="max-w-3xl mx-auto px-4 py-16">
     <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>

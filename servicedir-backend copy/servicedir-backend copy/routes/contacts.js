@@ -63,7 +63,7 @@ router.get('/', async (req, res) => {
       .limit(limit);
 
     const total = await Contact.countDocuments(query);
-
+    
     res.json({
       contacts,
       pagination: {

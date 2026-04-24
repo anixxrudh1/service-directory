@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Calendar, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const BookingModal = ({ isOpen, onClose, service, onBookingSuccess }) => {
+const BookingModal = ({ isOpen, onClose, service, onProceedToPayment }) => {
   const { user } = useAuth();
   const [date, setDate] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,26 +24,13 @@ const BookingModal = ({ isOpen, onClose, service, onBookingSuccess }) => {
         date: new Date(date).toISOString() // Convert to proper ISO date string
       };
 
-      console.log('Booking Payload:', payload); // Debug log
+      console.log('Booking Payload ready for payment:', payload); // Debug log
 
-      const response = await fetch('http://localhost:5001/api/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      console.log('Booking Response:', data); // Debug log
-
-      if (!response.ok) throw new Error(data.error || 'Booking failed');
-
-      alert('Booking Confirmed! The provider will contact you shortly.');
-      setDate(''); // Reset date
+      // Close booking modal and proceed to payment
+      setDate('');
       onClose();
-      
-      // Refresh bookings list if callback provided
-      if (onBookingSuccess) {
-        onBookingSuccess();
+      if (onProceedToPayment) {
+        onProceedToPayment(payload);
       }
     } catch (error) {
       console.error('Booking Error:', error);
@@ -105,7 +92,7 @@ const BookingModal = ({ isOpen, onClose, service, onBookingSuccess }) => {
               disabled={loading}
               className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all disabled:opacity-70"
             >
-              {loading ? 'Confirming...' : 'Confirm Booking'}
+              {loading ? 'Processing...' : 'Proceed to Payment'}
             </button>
           </form>
         </div>

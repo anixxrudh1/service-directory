@@ -74,10 +74,9 @@ router.post('/login', async (req, res) => {
     if (!user) {
       console.log("❌ Login failed: User not found in database");
       
-      // Log failed login attempt
+      // Log failed login attempt (without userId and role)
       await LoginHistory.create({
         email: email.toLowerCase(),
-        role: 'unknown',
         status: 'failed',
         reason: 'User not found',
         ipAddress,
@@ -86,6 +85,7 @@ router.post('/login', async (req, res) => {
       });
 
       return res.status(400).json({ message: 'Invalid credentials' });
+
     }
 
     // 2. Validate Password
